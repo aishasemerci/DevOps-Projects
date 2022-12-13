@@ -1,0 +1,5 @@
+- name: ping all the target nodes
+  hosts: all
+  tasks:
+    - name: pinging
+      ping:    #ping module that we are using for pinging

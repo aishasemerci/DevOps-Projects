@@ -1,0 +1,126 @@
+- name: db configuration
+  hosts: db_server
+  tasks:
+    - name: install mariadb and PyMySQL
+      become: yes   # since we have installation, we need root authorization
+      yum:   #task1, the modele that we will use for installation
+        name: 
+          - mariadb-server
+          - python3-PyMySQL
+        state: latest
+
+    # - name: start mariadb  #task2 
+    #   become: yes
+    #   command: systemctl start mariadb   
+
+    - name: start and enable mariadb  #task3
+      become: yes
+      systemd: 
+        name: mariadb
+        state: started #by adding this line, we can command out task2
+        enabled: true  
+
+    - name: copy the sql script #task4 copy sql-file from home to local
+      copy: 
+        src: ~/Ansible-Website-Project/db-load-script.sql
+        dest: ~/      
+
+    - name: Create password for the root user #task5
+      mysql_user:  
+        login_password: ''
+        login_user: root
+        name: root 
+        password: "clarus1234"
+
+    - name: copy the .my.cnf file  #task6
+      copy:
+        src: ~/.my.cnf  #this config's file needs to be created in ec2-home, location is important
+        dest: ~/      
+
+    - name: Create db user with name 'remoteUser' and password  'clarus1234' with all database privileges  #task6
+      mysql_user:
+        name: remoteUser
+        password: "ayse1234"
+        login_user: "root"
+        login_password: "clarus1234"
+        priv: '*.*:ALL,GRANT'
+        state: present
+        host: "{{ hostvars['web_server'].ansible_host }}"    
+
+    - name: Create database schema  #task7 , creating database with name ecomdb
+      mysql_db:
+        name: ecomdb
+        login_user: root
+        login_password: "clarus1234"
+        state: present    
+
+    - name: check if the database has the table  #task8
+      shell: |
+        echo "USE ecomdb; show tables like 'products'; " | mysql
+      register: resultOfShowTables
+
+    - name: DEBUG  #task9
+      debug:
+        var: resultOfShowTables  
+
+    - name: Import database table  #task10
+      mysql_db:
+        name: ecomdb   # This is the database schema name.
+        state: import  # This module is not idempotent when the state property value is import.
+        target: ~/db-load-script.sql # This script creates the products table.
+      when: resultOfShowTables.stdout == "" # This line checks if the table is already imported. If so this task doesn't run.      
+
+    - name: restart mariadb  #task11
+      become: yes
+      service: 
+        name: mariadb
+        state: restarted 
+
+#New play for web_server 
+- name: web server configuration
+  hosts: web_server
+  become: yes
+  tasks:
+    - name: install the latest version of Git, Apache, Php, Php-Mysqlnd   #task1
+      package: #module installs depending on os
+        name:
+          - git
+          - httpd 
+          - php 
+          - php-mysqlnd 
+        state: latest   
+
+    - name: start the server and enable it   #task2
+      service:
+        name: httpd
+        state: started
+        enabled: yes
+
+    - name: clone the repo of the website  #task3
+      shell: |
+        if [ -z "$(ls -al /var/www/html | grep .git)" ]; then
+          git clone https://github.com/kodekloudhub/learning-app-ecommerce.git /var/www/html/
+          echo "ok"
+        else
+          echo "already cloned..."
+        fi
+      register: result
+
+    - name: DEBUG   #task4
+      debug:
+        var: result
+
+    - name: Replace a default entry with our own  #task5
+      lineinfile:
+        path: /var/www/html/index.php
+        regexp: '172\.20\.1\.101'
+        line: "$link = mysqli_connect('{{ hostvars['db_server'].ansible_host }}', 'remoteUser', 'ayse1234', 'ecomdb');"
+      when: not result.stdout == "already cloned..."    
+
+    - selinux:  #task6
+        state: disabled    
+
+    - name: Restart service httpd    #task7
+      service:
+        name: httpd
+        state: restarted  

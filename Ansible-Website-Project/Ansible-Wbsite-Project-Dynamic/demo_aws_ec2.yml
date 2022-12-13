@@ -1,0 +1,12 @@
+plugin: aws_ec2
+regions:
+  - "us-east-1"
+keyed_groups:
+  - key: tags.Name
+filters:
+  instance-state-name : running
+compose:
+  ansible_host: public_ip_address
+hostnames:
+- tag:Name=web_server
+- tag:Name=db_server

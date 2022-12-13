@@ -1,0 +1,4 @@
+There are a couple of things that we need to do;
+	1) Assign ec2-full-access role to our control node 
+	2) Install boto-3 botocore with "pip3 install --user boto3" command
+    3) Add your private key file name into ansible.cfg file

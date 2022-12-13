@@ -1,0 +1,7 @@
+[servers]
+db_server ansible_host=172.31.84.184 
+web_server ansible_host=172.31.87.129  
+
+[all:vars]
+ansible_ssh_private_key_file=~/firstkey.pem
+ansible_user=ec2-user

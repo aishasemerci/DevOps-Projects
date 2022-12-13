@@ -1,0 +1,45 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: |
+  Yaml file to create web page by using docker containers
+  
+Resources:
+
+  ec2secgrp:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "security group for bookstore project" # Required
+      GroupName: "bookstore-sec-grp"
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22 
+          CidrIp: 0.0.0.0/0
+
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0          
+
+  ec2instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: ami-0b0dcb5067f052a63
+      InstanceType: t2.micro
+      KeyName: firstkey
+      SecurityGroupIds:
+        - !GetAtt ec2secgrp.GroupId 
+
+      UserData: !Base64 |
+        #! /bin/bash
+            yum update -y
+            yum install git -y
+            amazon-linux-extras install docker -y
+            systemctl start docker
+            systemctl enable docker
+            curl -L "https://github.com/docker/compose/releases/download/v2.12.2/docker-compose-$(uname -s)-$(uname -m)" \
+            -o /usr/local/bin/docker-compose
+            chmod +x /usr/local/bin/docker-compose
+            TOKEN="XXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+            git clone https://$TOKEN@github.com/aishasemerci/bookstore-docker-project.git
+            cd bookstore-docker-project
+            docker-compose up 
