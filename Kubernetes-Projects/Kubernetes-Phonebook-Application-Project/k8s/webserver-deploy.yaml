@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: webserver-deploy
+  name: webserver-deploy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: webserver-deploy
+  template:
+    metadata:
+      labels:
+        app: webserver-deploy
+    spec:
+      containers:
+      - image: aishasemerci/webserver
+        name: webserver
+        ports:
+          - containerPort: 80
+        envFrom:
+          - configMapRef:
+              name: app-config
+          - secretRef:
+              name: app-secret  
+
