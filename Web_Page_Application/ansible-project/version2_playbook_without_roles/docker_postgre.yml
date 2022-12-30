@@ -1,0 +1,55 @@
+- name: configure postgresql node 
+  hosts: _ansible_postgresql
+  become: true 
+  vars_files:
+    - secret.yml
+  tasks: 
+    - name: create build directory
+      file: 
+        path: /home/ec2-user/postgresql
+        state: directory 
+        owner: root 
+        group: root 
+        mode: "0755"  
+
+    - name: copy the sql script
+      copy: 
+        src: /home/ec2-user/ansible-project/postgres/init.sql 
+        dest: /home/ec2-user/postgresql   
+
+    - name: copy the dockerfile
+      copy: 
+        src: /home/ec2-user/ansible-project/postgres/Dockerfile
+        dest: /home/ec2-user/postgresql 
+
+    - name: remove container and image if exist
+      shell: "docker ps -q --filter 'name=ayse_postgre' && docker stop ayse_postgre && docker rm -fv ayse_postgre && docker image rm -f aishasemerci/postgre || echo 'Not Found'" 
+
+    - name: build container image
+      docker_image:
+        name: aishasemerci/postgre
+        build: 
+          path: /home/ec2-user/postgresql   
+        source: build
+        state: present         
+# docker build -t aishasemerci/postgre .  
+
+    - name: create postgresql docker container
+      docker_container:
+        name: ayse_postgre
+        image: aishasemerci/postgre
+        state: started
+        ports: 
+          - "5432:5432" 
+        env: 
+          POSTGRES_PASSWORD: "{{ password }}"
+        volumes: 
+          - /db-data:/var/lib/postgresql/data # we named db-data, you can name it however you want. It is docker engine volume part, and mounting postgresql's default volume path  
+      register: container_info #in order to get output
+
+    - name: print the container info
+      debug: 
+        var: container_info #publishing this output which we created above     
+
+# run this playbook with "ansible-playbook docker_postgre.yml --ask-vault-pass" command
+# you can check docker container and image with " ansible _ansible_postgresql -a "docker ps -a" " command!

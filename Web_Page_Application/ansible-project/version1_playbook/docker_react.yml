@@ -1,0 +1,104 @@
+- name: configure react instance 
+  hosts: _ansible_react
+  become: true 
+  tasks: 
+    - name: update packages 
+      yum: 
+        name: "*"
+        state: latest 
+
+    - name: uninstall old versions 
+      yum:
+        name: "{{ item }}"
+        state: removed 
+      loop: 
+        - docker
+        - docker-client
+        - docker-client-latest
+        - docker-common
+        - docker-latest
+        - docker-latest-logrotate
+        - docker-logrotate
+        - docker-engine  
+
+    - name: install yum-utils
+      yum: 
+        name: yum-utils
+        state: latest 
+
+    - name: Add docker repo
+      get_url: 
+        url: https://download.docker.com/linux/centos/docker-ce.repo 
+        dest: /etc/yum.repos.d/docker-ce.repo 
+
+    - name: install docker
+      package: 
+        name: docker-ce  #docker community edition
+        state: latest
+
+    - name: install pip  #we install pip in order to install docker sdk, cuz it is written in python language
+      package: 
+        name: python3-pip
+        state: present
+
+    - name: install docker sdk #docker image module requirement
+      pip: 
+        name: docker 
+
+    - name: add ec2-user to docker group
+      user: 
+        name: ec2-user
+        groups: docker
+        append: yes    
+# usermod -a -G docker ec2-user             
+    - name: start docker service
+      systemd: 
+        name: docker
+        enabled: yes
+        state: started
+
+    - name: create build directory
+      file: 
+        path: /home/ec2-user/react
+        state: directory 
+        owner: root 
+        group: root 
+        mode: "0755"  
+ # at this point do not forget change DB_HOST env variable for postgresql node
+    - name: copy files to react node
+      copy: 
+        src: /home/ec2-user/ansible-project/react/client/ # *** "/" dont forget
+        dest: /home/ec2-user/react  
+
+    - name: copy the dockerfile
+      copy: 
+        src: /home/ec2-user/ansible-project/react/Dockerfile
+        dest: /home/ec2-user/react 
+
+    - name: remove container and image if exist
+      shell: "docker ps -q --filter 'name=ayse_react' && docker stop ayse_react && docker rm -fv ayse_react && docker image rm -f aishasemerci/react || echo 'Not Found'" 
+
+    - name: build container image
+      docker_image:
+        name: aishasemerci/react
+        build: 
+          path: /home/ec2-user/react   
+        source: build
+        state: present         
+# docker build -t aishasemerci/react .  
+
+    - name: create react docker container
+      docker_container:
+        name: ayse_react
+        image: aishasemerci/react
+        state: started
+        ports: 
+          - "3000:3000" 
+      register: container_info #in order to get output
+
+    - name: print the container info
+      debug: 
+        var: container_info #publishing this output which we created above     
+
+# run this playbook with "ansible-playbook docker_react.yml" command
+# you can check docker container and image with " ansible _ansible_react -a "docker ps -a" " command!

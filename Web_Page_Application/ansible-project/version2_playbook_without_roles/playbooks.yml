@@ -1,0 +1,6 @@
+- import_playbook: install_docker.yml
+- import_playbook: docker_postgre.yml
+- import_playbook: docker_nodejs.yml
+- import_playbook: docker_react.yml
+
+# run this playbook with "ansible-playbook playbooks.yml --ask-vault-pass" command

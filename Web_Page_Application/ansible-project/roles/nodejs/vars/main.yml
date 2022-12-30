@@ -1,0 +1,5 @@
+---
+# vars file for nodejs
+container_path: /home/ec2-user/nodejs
+container_name: ayse_nodejs
+image_name: aishasemerci/nodejs
