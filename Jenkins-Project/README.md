@@ -6,7 +6,7 @@ This project aims to create a Jenkins pipeline to deploy web-page written Nodejs
 
 ## Problem Statement
 
-![Project_007](ansible.png)
+![Project_007](Jenkins_Project.png)
 
 - Clarusway has recently ended up a project that aims to serve as web page. You and your colleagues are assigned to work on this project. Clarusway Developer team has done with code and DevOps team is going to deploy the app in production environment using ansible.
 
