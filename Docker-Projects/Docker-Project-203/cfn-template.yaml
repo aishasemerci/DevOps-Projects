@@ -7,7 +7,7 @@ Resources:
   ec2secgrp:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: "security group for bookstore project" # Required
+      GroupDescription: "security group for bookstore project" # Required!
       GroupName: "bookstore-sec-grp"
       SecurityGroupIngress:
         - IpProtocol: tcp
