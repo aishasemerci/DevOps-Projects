@@ -23,7 +23,7 @@ provider "github" {
 }
 
 
-resource "github_repository" "myrepo" {  #github da private bir repo olusturduk
+resource "github_repository" "myrepo" {  #creating a private repo in github
   name        = "bookstore-repo"
   auto_init = true
   visibility = "private"
