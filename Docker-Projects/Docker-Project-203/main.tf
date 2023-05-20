@@ -46,7 +46,7 @@ resource "github_repository_file" "myfiles" {
     repository = github_repository.myrepo.name
     branch = "main"
     commit_message = "managed by terraform"
-    overwrite_on_create = true  #bu kismi sor!!!
+    overwrite_on_create = true 
 }
 
 resource "aws_instance" "tf-docker-ec2" {
