@@ -29,7 +29,7 @@ resource "github_repository" "myrepo" {  #creating a private repo in github
   visibility = "private"
 }
 
-resource "github_branch_default" "main" {   #anladigim kadariyla olusturduumuz reponun main branch de olusmasi icin yaziyoruz bu resurce u da
+resource "github_branch_default" "main" {   # is defining a resource block for a default branch
     branch = "main"
     repository = github_repository.myrepo.name  
 }
