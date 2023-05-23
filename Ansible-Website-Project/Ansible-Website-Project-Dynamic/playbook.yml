@@ -2,7 +2,7 @@
   hosts: _db_server
   tasks:
     - name: install mariadb and PyMySQL
-      become: yes   # since we have installation, we need root authorization
+      become: yes   # since we have installation, we need root authorization!
       yum:   #task1, the modele that we will use for installation
         name: 
           - mariadb-server
