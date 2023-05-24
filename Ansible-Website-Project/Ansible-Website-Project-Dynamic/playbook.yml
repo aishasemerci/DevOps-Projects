@@ -3,7 +3,7 @@
   tasks:
     - name: install mariadb and PyMySQL
       become: yes   # since we have installation, we need root authorization!
-      yum:   #task1, the modele that we will use for installation
+      yum:   #task1, the modele that we will use for installation.
         name: 
           - mariadb-server
           - python3-PyMySQL
