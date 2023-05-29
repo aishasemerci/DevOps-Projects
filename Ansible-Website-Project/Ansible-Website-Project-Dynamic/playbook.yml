@@ -17,7 +17,7 @@
       become: yes
       systemd: 
         name: mariadb
-        state: started #by adding this line, we can command out task2
+        state: started #by adding this line, we can command out task2.
         enabled: true  
 
     - name: copy the sql script #task4 copy sql-file from home to local
