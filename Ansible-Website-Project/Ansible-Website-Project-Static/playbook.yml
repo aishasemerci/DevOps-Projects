@@ -34,7 +34,7 @@
 
     - name: copy the .my.cnf file  #task6
       copy:
-        src: ~/.my.cnf  #this config's file needs to be created in ec2-home, location is important
+        src: ~/.my.cnf  #this config's file needs to be created in ec2-home, location is important!
         dest: ~/      
 
     - name: Create db user with name 'remoteUser' and password  'clarus1234' with all database privileges  #task6
