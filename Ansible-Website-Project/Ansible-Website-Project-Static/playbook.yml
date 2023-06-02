@@ -76,7 +76,7 @@
         name: mariadb
         state: restarted 
 
-#New play for web_server 
+#New play for web_server. 
 - name: web server configuration
   hosts: web_server
   become: yes
