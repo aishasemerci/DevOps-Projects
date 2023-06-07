@@ -5,7 +5,7 @@ services:
     image: mysql:5.7
     container_name: database
     environment:
-      MYSQL_ROOT_PASSWORD: aysesemerci
+      MYSQL_ROOT_PASSWORD: aysesemerci  #change with yours
       MYSQL_DATABASE: bookstore_db
       MYSQL_USER: clarusway
       MYSQL_PASSWORD: Clarusway_1
