@@ -7,7 +7,7 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: aysesemerci  #change with yours
       MYSQL_DATABASE: bookstore_db  #change with yours
-      MYSQL_USER: clarusway
+      MYSQL_USER: clarusway  #change with yours
       MYSQL_PASSWORD: Clarusway_1
     networks:
       - clarusnet  
