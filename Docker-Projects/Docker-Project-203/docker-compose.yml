@@ -8,7 +8,7 @@ services:
       MYSQL_ROOT_PASSWORD: aysesemerci  #change with yours
       MYSQL_DATABASE: bookstore_db  #change with yours
       MYSQL_USER: clarusway  #change with yours
-      MYSQL_PASSWORD: Clarusway_1
+      MYSQL_PASSWORD: Clarusway_1  #change with yours
     networks:
       - clarusnet  
 
