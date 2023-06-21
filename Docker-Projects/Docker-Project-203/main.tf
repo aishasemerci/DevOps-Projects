@@ -50,8 +50,8 @@ resource "github_repository_file" "myfiles" {
 }
 
 resource "aws_instance" "tf-docker-ec2" {
-    ami = "ami-0f9fc25dd2506cf6d"
-    instance_type = "t2.micro"
+    ami = "ami-0f9fc25dd2506cf6d" 
+    instance_type = "t2.micro" # you can change it
     key_name = "firstkey"  # change with your key name
     security_groups = ["ayse-docker-sec-gr-203"] 
     tags = {
