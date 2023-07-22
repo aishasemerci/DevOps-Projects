@@ -1,0 +1,31 @@
+- name: Install Apache on Ubuntu 20.04
+  hosts: _mentor-group-server
+  become: true
+
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+      tags:
+        - update
+
+    - name: Install Apache package
+      apt:
+        name: apache2
+        state: present
+      tags:
+        - apache
+
+    - name: Enable Apache service
+      systemd:
+        name: apache2
+        enabled: yes
+      tags:
+        - apache
+
+    - name: Start Apache service
+      systemd:
+        name: apache2
+        state: started
+      tags:
+        - apache

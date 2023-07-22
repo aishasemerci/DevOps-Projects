@@ -1,0 +1,10 @@
+plugin: aws_ec2
+regions:
+  - "us-east-1"
+keyed_groups:
+  - key: tags.Name
+filters:
+  instance-state-name : running
+  tag:Name: mentor-group-server
+compose:
+  ansible_host: public_ip_address
