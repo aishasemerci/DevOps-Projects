@@ -3,28 +3,41 @@ variables:
   AWS_REGION: us-east-1
   TF_ROOT: ${CI_PROJECT_DIR}/Create-Terraform-Files
   ANSIBLE: ${CI_PROJECT_DIR}/Ansible-Files
+  TF_ADDRESS: ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/terraform/state/${CI_PROJECT_NAME}
 
 stages:
+  - init-terraform
   - plan-terraform
-  - apply-terrafom
+  - apply-terraform
+  - wait-for-instances
   - deploy-apache-with-ansible
   - terminate
+
+init-terraform:
+  stage: init-terraform
+  environment:
+    name: ayse
+  tags:
+    - windows-gitlab-runner   #gitlab-runner tag!
+  before_script:
+    - cd ${TF_ROOT}
+  script:
+    - gitlab-terraform init  
 
 plan-terraform:
   stage: plan-terraform
   environment:
     name: ayse
   tags:
-    - ec2-runner   #I need to arrange this runner with exactly this tag!!
+    - windows-gitlab-runner   #gitlab-runner tag!
   before_script:
     - cd ${TF_ROOT}
   script:
     - pwd
     - ls
-    - gitlab-terraform init
     - gitlab-terraform plan
     - gitlab-terraform plan-json
-  artifacts: # The terraform report obtains a Terraform tfplan.json file. The collected Terraform plan report uploads to GitLab as an artifact..
+  artifacts: # The terraform report obtains a Terraform tfplan.json file. The collected Terraform plan report uploads to GitLab as an artifact...
     name: plan
     paths:
       - ${TF_ROOT}/plan.cache
@@ -36,23 +49,48 @@ apply-terraform:
   environment: 
     name: ayse 
   tags: 
-    - ec2-runner
+    - windows-gitlab-runner
   before_script:
     - cd ${TF_ROOT}
   script: 
     - ls 
-    - gitlab-terrafom apply --auto-approve
+    - gitlab-terraform apply --auto-approve  
+
+wait-for-instances:
+  stage: wait-for-instances
+  image: registry.gitlab.com/gitlab-org/cloud-deploy/aws-base:latest
+  environment: 
+    name: ayse 
+  tags: 
+    - windows-gitlab-runner   #gitlab-runner tag!
+  script:
+  - INSTANCE_IDS=$(aws ec2 describe-instances --filters Name=tag-value,Values=mentor-group-server Name=tag-value,Values=Instance* Name=instance-state-name,Values=running --query Reservations[*].Instances[*].[InstanceId] --output text)
+  - aws ec2 wait instance-status-ok --instance-ids $INSTANCE_IDS
+
+  # - INSTANCE_IDS=$(aws ec2 describe-instances --filter "Name=tag:Order,Values=Instance*" --query 'Reservations[*].Instances[*].InstanceId' --output text)
+  # - |
+  #   for instance_id in $INSTANCE_IDS; do
+  #     status=$(aws ec2 describe-instance-status --instance-ids $instance_id --query 'InstanceStatuses[0].InstanceStatus.Status' --output text)
+  #     while [ "$status" != "ok" ]; do
+  #       sleep 10
+  #       status=$(aws ec2 describe-instance-status --instance-ids $instance_id --query 'InstanceStatuses[0].InstanceStatus.Status' --output text)
+  #     done
+  #   done
+
 
 deploy-apache-with-ansible: 
   stage: deploy-apache-with-ansible
+  dependencies:
+    - wait-for-instances
+  image: webdevops/ansible:centos-7
   environment:
     name: ayse 
   tags:
-    - ec2-runner
+    - windows-gitlab-runner
   before_script:
     - cd ${ANSIBLE}
   script: 
-    -  ansible-playbook -i "mentor_aws_ec2.yml" upload-apache.yaml
+    -  ansible-playbook -u ec2-user -i mentor_aws_ec2.yml --private-key=firstkey upload-apache.yaml 
 
 terminate:
   stage: terminate
@@ -60,11 +98,11 @@ terminate:
   environment: 
     name: ayse  
   tags:
-    - ec2-runner
+    - windows-gitlab-runner
   before_script:
-    - cd ${TF_ROOT }
+    - cd ${TF_ROOT}
   script:
-    - gitlab-terraform destroy           
+    - gitlab-terraform destroy          
 
 
 
