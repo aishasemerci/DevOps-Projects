@@ -12,6 +12,7 @@ provider "aws" {
   region = var.region
 }
 
+
 resource "aws_instance" "mentor-instance" {
   ami           = var.ami
   instance_type = var.instance_type
@@ -22,6 +23,7 @@ resource "aws_instance" "mentor-instance" {
 
   tags = {
     Name = var.mentor-server-tag
+    Order = "Instance ${count.index + 1}"
   }
 }
 
