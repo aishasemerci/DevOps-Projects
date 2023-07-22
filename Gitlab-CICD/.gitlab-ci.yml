@@ -1,0 +1,73 @@
+image: registry.gitlab.com/gitlab-org/terraform-images/stable:latest
+variables:
+  AWS_REGION: us-east-1
+  TF_ROOT: ${CI_PROJECT_DIR}/Create-Terraform-Files
+  ANSIBLE: ${CI_PROJECT_DIR}/Ansible-Files
+
+stages:
+  - plan-terraform
+  - apply-terrafom
+  - deploy-apache-with-ansible
+  - terminate
+
+plan-terraform:
+  stage: plan-terraform
+  environment:
+    name: ayse
+  tags:
+    - ec2-runner   #I need to arrange this runner with exactly this tag!!
+  before_script:
+    - cd ${TF_ROOT}
+  script:
+    - pwd
+    - ls
+    - gitlab-terraform init
+    - gitlab-terraform plan
+    - gitlab-terraform plan-json
+  artifacts: # The terraform report obtains a Terraform tfplan.json file. The collected Terraform plan report uploads to GitLab as an artifact..
+    name: plan
+    paths:
+      - ${TF_ROOT}/plan.cache
+    reports:
+      terraform: ${TF_ROOT}/plan.json
+
+apply-terraform:
+  stage: apply-terraform
+  environment: 
+    name: ayse 
+  tags: 
+    - ec2-runner
+  before_script:
+    - cd ${TF_ROOT}
+  script: 
+    - ls 
+    - gitlab-terrafom apply --auto-approve
+
+deploy-apache-with-ansible: 
+  stage: deploy-apache-with-ansible
+  environment:
+    name: ayse 
+  tags:
+    - ec2-runner
+  before_script:
+    - cd ${ANSIBLE}
+  script: 
+    -  ansible-playbook -i "mentor_aws_ec2.yml" upload-apache.yaml
+
+terminate:
+  stage: terminate
+  when: manual  
+  environment: 
+    name: ayse  
+  tags:
+    - ec2-runner
+  before_script:
+    - cd ${TF_ROOT }
+  script:
+    - gitlab-terraform destroy           
+
+
+
+
+
+
