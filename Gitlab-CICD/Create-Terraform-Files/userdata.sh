@@ -1,7 +1,7 @@
-#! /bin/bash
+#!/bin/bash
 # update os
-sudo apt-get update -y
-sudo apt-get upgrade -y
+yum update -y
+yum upgrade -y
 # set server hostname as mentor-group-server
 hostnamectl set-hostname mentor-group-server
 # install git
