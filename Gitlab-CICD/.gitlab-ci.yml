@@ -62,7 +62,7 @@ wait-for-instances:
   environment: 
     name: ayse 
   tags: 
-    - windows-gitlab-runner   #gitlab-runner tag!
+    - windows-gitlab-runner   #gitlab-runner tag!!
   script:
   - INSTANCE_IDS=$(aws ec2 describe-instances --filters Name=tag-value,Values=mentor-group-server Name=tag-value,Values=Instance* Name=instance-state-name,Values=running --query Reservations[*].Instances[*].[InstanceId] --output text)
   - aws ec2 wait instance-status-ok --instance-ids $INSTANCE_IDS
